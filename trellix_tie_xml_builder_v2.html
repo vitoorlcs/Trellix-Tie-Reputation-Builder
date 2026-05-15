@@ -1,0 +1,1925 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trellix TIE Reputation Builder</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary);background:transparent}
+.wrap{display:flex;flex-direction:column;height:100vh;min-height:600px}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.logo i{font-size:20px;color:var(--color-text-info)}
+.pill{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--color-background-info);color:var(--color-text-info);font-weight:500}
+.topbar-right{display:flex;gap:8px}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:13px;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans);transition:background .15s,opacity .15s;white-space:nowrap}
+.btn:hover{background:var(--color-background-secondary)}
+.btn:active{opacity:.8}
+.btn-info{background:var(--color-background-info);color:var(--color-text-info);border-color:transparent}
+.btn-success{background:var(--color-background-success);color:var(--color-text-success);border-color:transparent}
+.btn-warn{background:var(--color-background-warning);color:var(--color-text-warning);border-color:transparent}
+.btn-sm{padding:5px 9px;font-size:12px}
+.btn-xs{padding:3px 7px;font-size:11px}
+.btn-icon{padding:6px;border-radius:var(--border-radius-md)}
+
+.body{display:flex;flex:1;overflow:hidden}
+
+.sidebar{width:200px;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-section{padding:10px 12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.sidebar-label{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.sidebar-stat{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0}
+.sidebar-stat span{color:var(--color-text-secondary)}
+.sidebar-stat strong{font-size:14px;font-weight:500}
+.rep-legend{display:flex;flex-direction:column;gap:4px;font-size:11px}
+.rep-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rep-row{display:flex;align-items:center;gap:6px;cursor:pointer;padding:3px 6px;border-radius:var(--border-radius-md);transition:background .1s}
+.rep-row:hover{background:var(--color-background-primary)}
+.rep-row span{color:var(--color-text-secondary)}
+.rep-count{margin-left:auto;font-weight:500;color:var(--color-text-primary)}
+
+.center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);flex-shrink:0;flex-wrap:wrap}
+.toolbar-sep{width:0.5px;height:20px;background:var(--color-border-secondary);margin:0 2px}
+.search-wrap{position:relative;flex:1;min-width:140px}
+.search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--color-text-secondary);pointer-events:none}
+.search-inp{width:100%;padding:6px 10px 6px 30px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:13px;font-family:var(--font-sans);color:var(--color-text-primary);outline:none}
+.search-inp:focus{border-color:var(--color-text-info)}
+
+.bulk-bar{display:none;align-items:center;gap:8px;padding:8px 14px;background:var(--color-background-info);border-bottom:0.5px solid var(--color-border-tertiary);flex-shrink:0}
+.bulk-bar.show{display:flex}
+.bulk-bar span{font-size:13px;color:var(--color-text-info);font-weight:500}
+.bulk-select{padding:5px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-text-info);background:transparent;font-size:12px;color:var(--color-text-info);font-family:var(--font-sans);cursor:pointer}
+
+.table-wrap{flex:1;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{position:sticky;top:0;background:var(--color-background-secondary);padding:8px 10px;text-align:left;font-size:11px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap;z-index:1}
+td{padding:0;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle}
+tr:hover td{background:var(--color-background-secondary)}
+tr.selected td{background:var(--color-background-info)!important}
+.td-inner{padding:5px 10px;display:flex;align-items:center}
+.td-check{width:36px;text-align:center}
+input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--color-text-info)}
+.td-num{width:36px;font-size:11px;color:var(--color-text-secondary);text-align:center}
+.td-file{min-width:120px;max-width:160px}
+.td-hash{font-family:var(--font-mono);font-size:11px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--color-text-secondary)}
+.td-rep{width:250px}
+.td-comment{min-width:100px}
+.td-actions{width:60px}
+.cell-inp{width:100%;padding:4px 6px;border:none;background:transparent;font-size:13px;font-family:var(--font-sans);color:var(--color-text-primary);outline:none;min-width:80px}
+.cell-inp:focus{background:var(--color-background-secondary);border-radius:4px}
+.cell-hash{font-family:var(--font-mono);font-size:11px;width:100%;padding:4px 6px;border:none;background:transparent;color:var(--color-text-secondary);outline:none}
+.cell-hash:focus{background:var(--color-background-secondary);border-radius:4px;color:var(--color-text-primary)}
+.cell-sel{width:100%;padding:4px 6px;border:none;background:transparent;font-size:12px;font-family:var(--font-sans);color:var(--color-text-primary);outline:none;cursor:pointer}
+.cell-sel:focus{background:var(--color-background-secondary);border-radius:4px}
+.rep-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500}
+.err-cell{background:var(--color-background-danger)!important}
+.valid-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+.empty-tbl{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 24px;color:var(--color-text-secondary)}
+.empty-tbl i{font-size:48px;opacity:.25}
+.empty-tbl p{font-size:13px;line-height:1.6;text-align:center}
+
+.right-panel{width:300px;border-left:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;flex-shrink:0}
+.panel-tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);flex-shrink:0}
+.tab{flex:1;padding:9px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;color:var(--color-text-secondary);border-bottom:2px solid transparent;transition:color .15s}
+.tab.active{color:var(--color-text-info);border-bottom-color:var(--color-text-info)}
+.panel-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.tab-pane{display:none;flex:1;flex-direction:column;overflow:hidden}
+.tab-pane.active{display:flex}
+
+.xml-pre{flex:1;overflow-y:auto;padding:12px;font-family:var(--font-mono);font-size:11px;line-height:1.7;color:var(--color-text-secondary);white-space:pre-wrap;word-break:break-all}
+.xt{color:var(--color-text-info)}
+.xv{color:var(--color-text-primary)}
+.xc{color:var(--color-text-secondary);opacity:.5}
+
+.csv-drop{margin:12px;border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:border-color .2s,background .2s;text-align:center}
+.csv-drop:hover,.csv-drop.drag{border-color:var(--color-text-info);background:var(--color-background-info)}
+.csv-drop i{font-size:32px;color:var(--color-text-secondary)}
+.csv-drop:hover i,.csv-drop.drag i{color:var(--color-text-info)}
+.csv-drop p{font-size:12px;color:var(--color-text-secondary);line-height:1.5}
+.csv-info{padding:0 12px;font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.csv-info code{font-family:var(--font-mono);font-size:11px;background:var(--color-background-secondary);padding:1px 4px;border-radius:4px}
+.csv-cols{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.col-chip{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary)}
+.col-chip.matched{background:var(--color-background-success);color:var(--color-text-success);border-color:transparent}
+
+.statusbar{display:flex;align-items:center;gap:16px;padding:6px 14px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);flex-shrink:0;font-size:11px;color:var(--color-text-secondary)}
+.statusbar strong{color:var(--color-text-primary)}
+
+.notif{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:var(--color-background-success);color:var(--color-text-success);padding:8px 16px;border-radius:99px;font-size:13px;display:none;align-items:center;gap:6px;z-index:999;white-space:nowrap;border:0.5px solid var(--color-text-success)}
+.notif.show{display:inline-flex}
+
+input[type=file]{display:none}
+
+:root{
+  --font-sans:Inter,"Segoe UI",Roboto,Arial,sans-serif;
+  --font-mono:"Cascadia Mono","SFMono-Regular",Consolas,monospace;
+  --color-background-primary:#101722;
+  --color-background-secondary:#0b111b;
+  --color-background-tertiary:#151f2d;
+  --color-background-info:rgba(34,211,238,.13);
+  --color-background-success:rgba(52,211,153,.14);
+  --color-background-warning:rgba(251,191,36,.15);
+  --color-background-danger:rgba(248,113,113,.16);
+  --color-text-primary:#edf5ff;
+  --color-text-secondary:#8da1b8;
+  --color-text-info:#22d3ee;
+  --color-text-success:#34d399;
+  --color-text-warning:#fbbf24;
+  --color-text-danger:#fb7185;
+  --color-border-secondary:rgba(141,161,184,.25);
+  --color-border-tertiary:rgba(141,161,184,.13);
+  --border-radius-md:7px;
+  --border-radius-lg:10px;
+  color-scheme:dark;
+}
+
+html,
+body{
+  width:100%;
+  height:100%;
+  min-height:100%;
+}
+
+body{
+  overflow:hidden;
+  background:
+    linear-gradient(90deg,rgba(34,211,238,.035) 1px,transparent 1px),
+    linear-gradient(180deg,rgba(34,211,238,.028) 1px,transparent 1px),
+    linear-gradient(135deg,#06080d 0%,#0a1019 46%,#07120f 100%);
+  background-size:44px 44px,44px 44px,auto;
+}
+
+.wrap{
+  min-height:640px;
+  background:rgba(8,13,22,.94);
+  border:1px solid rgba(34,211,238,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 24px 80px rgba(0,0,0,.42);
+}
+
+.topbar{
+  position:relative;
+  gap:16px;
+  padding:14px 18px;
+  background:linear-gradient(180deg,#111a27 0%,#0b111b 100%);
+  border-bottom:1px solid rgba(34,211,238,.18);
+}
+
+.topbar::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-1px;
+  height:2px;
+  background:linear-gradient(90deg,#22d3ee 0%,#34d399 42%,rgba(251,191,36,.75) 72%,transparent 100%);
+  opacity:.8;
+}
+
+.topbar-left{
+  min-width:260px;
+  gap:12px;
+}
+
+.logo{
+  color:#f8fbff;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.01em;
+}
+
+.logo i{
+  display:inline-grid;
+  width:36px;
+  height:36px;
+  place-items:center;
+  border:1px solid rgba(34,211,238,.4);
+  border-radius:8px;
+  background:rgba(34,211,238,.09);
+  color:var(--color-text-info);
+  box-shadow:0 0 22px rgba(34,211,238,.18);
+}
+
+.pill{
+  border:1px solid rgba(52,211,153,.35);
+  background:rgba(52,211,153,.12);
+  color:var(--color-text-success);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.topbar-right{
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.lang-control,
+.prefix-control{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:34px;
+  padding:0 8px;
+  border:1px solid rgba(141,161,184,.24);
+  border-radius:7px;
+  background:#0c1420;
+  color:#9adbea;
+}
+
+.prefix-control{
+  padding:0 10px;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+}
+
+.toolbar-label{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid rgba(141,161,184,.24);
+  border-radius:7px;
+  background:#0c1420;
+  color:#9adbea;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+}
+
+.toolbar-label select{
+  max-width:190px;
+}
+
+.lang-select{
+  border:0;
+  background:transparent;
+  color:var(--color-text-primary);
+  font:600 12px var(--font-sans);
+  outline:none;
+  cursor:pointer;
+}
+
+.lang-select option{
+  background:#101722;
+  color:#edf5ff;
+}
+
+.btn{
+  min-height:34px;
+  border:1px solid rgba(141,161,184,.24);
+  background:#121b28;
+  color:var(--color-text-primary);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  transition:border-color .16s,background .16s,color .16s,transform .16s,box-shadow .16s;
+}
+
+.btn:hover{
+  background:#172232;
+  border-color:rgba(34,211,238,.45);
+  box-shadow:0 0 0 3px rgba(34,211,238,.08);
+}
+
+.btn:active{
+  transform:translateY(1px);
+}
+
+.btn:disabled{
+  cursor:not-allowed;
+  opacity:.45;
+  transform:none;
+}
+
+.btn-info{
+  background:rgba(34,211,238,.14);
+  border-color:rgba(34,211,238,.42);
+  color:#a8f3ff;
+}
+
+.btn-success{
+  background:rgba(52,211,153,.14);
+  border-color:rgba(52,211,153,.4);
+  color:#b8f7df;
+}
+
+.btn-warn{
+  background:rgba(251,113,133,.14);
+  border-color:rgba(251,113,133,.38);
+  color:#ffc2cb;
+}
+
+.btn-sm{
+  min-height:30px;
+}
+
+.btn-xs{
+  min-height:28px;
+}
+
+.btn-icon{
+  width:32px;
+  min-width:32px;
+  min-height:32px;
+  justify-content:center;
+}
+
+.body{
+  background:rgba(4,8,14,.34);
+}
+
+.sidebar{
+  width:232px;
+  background:rgba(9,15,25,.96);
+  border-right:1px solid rgba(34,211,238,.12);
+}
+
+.sidebar-section{
+  padding:14px;
+  border-bottom:1px solid rgba(141,161,184,.12);
+}
+
+.sidebar-label{
+  margin-bottom:10px;
+  color:#a8bdd4;
+  font-size:10px;
+  letter-spacing:.12em;
+}
+
+.sidebar-stat{
+  margin-bottom:7px;
+  padding:8px 10px;
+  border:1px solid rgba(141,161,184,.14);
+  border-radius:7px;
+  background:rgba(16,23,34,.74);
+}
+
+.sidebar-stat span{
+  color:#8fa4bd;
+}
+
+.sidebar-stat strong{
+  color:#f8fbff;
+  font-size:16px;
+}
+
+.rep-legend{
+  gap:7px;
+}
+
+.rep-row{
+  min-height:32px;
+  padding:7px 8px;
+  border:1px solid rgba(141,161,184,.12);
+  background:rgba(16,23,34,.58);
+}
+
+.rep-row:hover{
+  background:rgba(34,211,238,.08);
+  border-color:rgba(34,211,238,.22);
+}
+
+.rep-dot{
+  box-shadow:0 0 12px currentColor;
+}
+
+.rep-count{
+  color:#edf5ff;
+}
+
+.center{
+  min-width:0;
+  background:rgba(8,13,22,.68);
+}
+
+.wrap.right-collapsed .right-panel{
+  display:none;
+}
+
+.toolbar{
+  gap:10px;
+  padding:12px 16px;
+  background:rgba(10,17,28,.92);
+  border-bottom:1px solid rgba(141,161,184,.13);
+}
+
+.toolbar-sep{
+  background:rgba(141,161,184,.2);
+}
+
+.search-wrap{
+  min-width:220px;
+}
+
+.search-wrap i{
+  left:11px;
+  color:#69ddeb;
+}
+
+.search-inp,
+.bulk-select{
+  border:1px solid rgba(141,161,184,.24);
+  background:#0c1420;
+  color:var(--color-text-primary);
+}
+
+.search-inp{
+  min-height:36px;
+  padding:8px 12px 8px 34px;
+}
+
+.search-inp::placeholder,
+.cell-inp::placeholder,
+.cell-hash::placeholder{
+  color:#62758c;
+}
+
+.search-inp:focus,
+.bulk-select:focus{
+  border-color:var(--color-text-info);
+  box-shadow:0 0 0 3px rgba(34,211,238,.1);
+}
+
+.bulk-bar{
+  padding:10px 16px;
+  background:linear-gradient(90deg,rgba(34,211,238,.14),rgba(52,211,153,.09));
+  border-bottom:1px solid rgba(34,211,238,.16);
+}
+
+.bulk-bar span{
+  color:#bdf7ff;
+}
+
+.table-wrap{
+  overflow:auto;
+}
+
+table{
+  min-width:1280px;
+  color:var(--color-text-primary);
+}
+
+th{
+  padding:11px 10px;
+  background:#0c1420;
+  border-bottom:1px solid rgba(34,211,238,.14);
+  color:#9db2c8;
+  font-size:10px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+td{
+  border-bottom:1px solid rgba(141,161,184,.1);
+}
+
+tr:hover td{
+  background:rgba(34,211,238,.055);
+}
+
+tr.selected td{
+  background:rgba(34,211,238,.13)!important;
+}
+
+.td-inner{
+  min-height:42px;
+}
+
+input[type=checkbox]{
+  accent-color:var(--color-text-info);
+}
+
+.td-num{
+  color:#758aa3;
+}
+
+.td-hash{
+  color:#9bb0c7;
+}
+
+.td-rep{
+  width:260px;
+  min-width:260px;
+}
+
+.cell-inp,
+.cell-hash,
+.cell-sel{
+  color:var(--color-text-primary);
+}
+
+.cell-hash{
+  color:#9adbea;
+}
+
+.cell-inp:focus,
+.cell-hash:focus,
+.cell-sel:focus{
+  background:#111c2a;
+  box-shadow:0 0 0 1px rgba(34,211,238,.22);
+}
+
+.cell-sel option{
+  background:#101722;
+  color:#edf5ff;
+}
+
+.rep-select{
+  min-height:32px;
+  padding:6px 30px 6px 12px;
+  border:1px solid var(--rep-bd,rgba(141,161,184,.24));
+  border-radius:999px;
+  background:var(--rep-bg,#111c2a);
+  color:var(--rep-fg,#edf5ff);
+  font-size:12px;
+  font-weight:700;
+  box-shadow:inset 3px 0 0 var(--rep-fg,#22d3ee),0 0 18px var(--rep-glow,transparent);
+}
+
+.rep-select:focus{
+  background:var(--rep-bg,#111c2a);
+  border-color:var(--rep-fg,#22d3ee);
+}
+
+.rep-badge{
+  border:1px solid rgba(255,255,255,.15);
+}
+
+.err-cell{
+  background:rgba(248,113,113,.2)!important;
+  box-shadow:inset 3px 0 0 var(--color-text-danger);
+}
+
+.dup-cell{
+  background:rgba(251,191,36,.13)!important;
+  box-shadow:inset 3px 0 0 var(--color-text-warning);
+}
+
+.virtual-spacer td{
+  padding:0;
+  border:0;
+}
+
+.empty-tbl{
+  min-height:360px;
+  color:#8da1b8;
+}
+
+.empty-tbl i{
+  color:#22d3ee;
+  opacity:.55;
+}
+
+.right-panel{
+  width:340px;
+  background:rgba(8,13,22,.98);
+  border-left:1px solid rgba(34,211,238,.12);
+}
+
+.panel-tabs{
+  background:#0b111b;
+  border-bottom:1px solid rgba(141,161,184,.13);
+}
+
+.tab{
+  padding:12px 10px;
+  color:#8fa4bd;
+}
+
+.tab:hover{
+  color:#d8faff;
+}
+
+.tab.active{
+  color:#8ef4ff;
+  border-bottom-color:var(--color-text-info);
+  background:rgba(34,211,238,.08);
+}
+
+.xml-pre{
+  margin:12px;
+  padding:14px;
+  border:1px solid rgba(34,211,238,.14);
+  border-radius:8px;
+  background:#060b12;
+  color:#9db2c8;
+}
+
+.xt{
+  color:#22d3ee;
+}
+
+.xv{
+  color:#edf5ff;
+}
+
+.xc{
+  color:#667c94;
+}
+
+.csv-drop{
+  margin:14px;
+  padding:28px 16px;
+  border:1px dashed rgba(34,211,238,.36);
+  border-radius:8px;
+  background:rgba(34,211,238,.055);
+}
+
+.csv-drop:hover,
+.csv-drop.drag{
+  border-color:#34d399;
+  background:rgba(52,211,153,.1);
+}
+
+.csv-drop i{
+  color:#22d3ee;
+}
+
+.csv-drop p,
+.csv-info{
+  color:#9db2c8;
+}
+
+.csv-info{
+  padding:0 14px;
+}
+
+.csv-info code{
+  background:#111c2a;
+  color:#bdf7ff;
+  border:1px solid rgba(34,211,238,.16);
+}
+
+.col-chip{
+  border:1px solid rgba(141,161,184,.16);
+  background:#111c2a;
+}
+
+.col-chip.matched{
+  background:rgba(52,211,153,.13);
+  color:#b8f7df;
+  border-color:rgba(52,211,153,.25);
+}
+
+.statusbar{
+  min-height:34px;
+  background:#0b111b;
+  border-top:1px solid rgba(141,161,184,.13);
+  color:#8da1b8;
+}
+
+.statusbar strong{
+  color:#edf5ff;
+}
+
+.notif{
+  bottom:18px;
+  border:1px solid rgba(52,211,153,.46);
+  background:#07160f;
+  color:#b8f7df;
+  box-shadow:0 18px 44px rgba(0,0,0,.42),0 0 0 4px rgba(52,211,153,.08);
+}
+
+::-webkit-scrollbar{
+  width:11px;
+  height:11px;
+}
+
+::-webkit-scrollbar-track{
+  background:#070b12;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#26374c;
+  border:3px solid #070b12;
+  border-radius:999px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:#34506a;
+}
+
+@media (max-width:1050px){
+  body{
+    overflow:auto;
+  }
+  .wrap{
+    height:auto;
+    min-height:100vh;
+  }
+  .body{
+    flex-direction:column;
+    overflow:visible;
+  }
+  .sidebar,
+  .right-panel{
+    width:100%;
+    max-height:none;
+    border-left:0;
+    border-right:0;
+  }
+  .center{
+    min-height:560px;
+  }
+  .topbar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .topbar-right{
+    width:100%;
+    justify-content:flex-start;
+  }
+}
+
+@media (max-width:640px){
+  .toolbar{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .search-wrap{
+    min-width:100%;
+  }
+  .toolbar-sep{
+    display:none;
+  }
+  .btn:not(.btn-icon){
+    justify-content:center;
+    width:100%;
+  }
+  .toolbar-label,
+  .prefix-control,
+  .lang-control{
+    justify-content:center;
+    width:100%;
+  }
+  .toolbar-label select{
+    flex:1;
+    max-width:none;
+  }
+  .bulk-bar{
+    align-items:stretch;
+    flex-direction:column;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo"><i class="ti ti-shield-lock" aria-hidden="true"></i> Trellix TIE Reputation Builder</div>
+    <span class="pill">v2</span>
+  </div>
+  <div class="topbar-right">
+    <label class="lang-control" title="Language">
+      <i class="ti ti-language" aria-hidden="true"></i>
+      <select class="lang-select" id="lang-select" aria-label="Language" onchange="setLanguage(this.value)">
+        <option value="pt">PT</option>
+        <option value="en">EN</option>
+      </select>
+    </label>
+    <button class="btn" onclick="addRow()"><i class="ti ti-plus"></i> <span data-i18n="action.addRow">Nova linha</span></button>
+    <button class="btn" id="undo-btn" onclick="undoLast()" disabled><i class="ti ti-arrow-back-up"></i> <span data-i18n="action.undo">Desfazer</span></button>
+    <button class="btn btn-warn" onclick="clearAll()"><i class="ti ti-trash"></i> <span data-i18n="action.clear">Limpar</span></button>
+    <button class="btn" onclick="saveProject()"><i class="ti ti-device-floppy"></i> <span data-i18n="action.saveProject">Salvar projeto</span></button>
+    <button class="btn" onclick="document.getElementById('project-input').click()"><i class="ti ti-folder-open"></i> <span data-i18n="action.loadProject">Carregar projeto</span></button>
+    <input type="file" id="project-input" accept=".json,application/json" onchange="handleProjectFile(this)">
+    <button class="btn btn-success" onclick="copyXML()"><i class="ti ti-copy"></i> <span data-i18n="action.copyXml">Copiar XML</span></button>
+    <button class="btn btn-info" onclick="downloadXML()"><i class="ti ti-download"></i> <span data-i18n="action.downloadXml">Baixar XML</span></button>
+  </div>
+</div>
+
+<div class="body">
+
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label" data-i18n="section.summary">Resumo</div>
+      <div class="sidebar-stat"><span>Total</span><strong id="s-total">0</strong></div>
+      <div class="sidebar-stat"><span data-i18n="stats.valid">Válidas</span><strong id="s-valid" style="color:var(--color-text-success)">0</strong></div>
+      <div class="sidebar-stat"><span data-i18n="stats.invalid">Inválidas</span><strong id="s-invalid" style="color:var(--color-text-danger)">0</strong></div>
+      <div class="sidebar-stat"><span data-i18n="stats.selected">Selecionadas</span><strong id="s-sel">0</strong></div>
+      <div class="sidebar-stat"><span>MD5</span><strong id="s-md5">0</strong></div>
+      <div class="sidebar-stat"><span>SHA1</span><strong id="s-sha1">0</strong></div>
+      <div class="sidebar-stat"><span>SHA256</span><strong id="s-sha256">0</strong></div>
+      <div class="sidebar-stat"><span data-i18n="stats.duplicates">Duplicadas</span><strong id="s-dup" style="color:var(--color-text-warning)">0</strong></div>
+    </div>
+    <div class="sidebar-section" style="flex:1;overflow-y:auto">
+      <div class="sidebar-label" data-i18n="section.byReputation">Por reputação</div>
+      <div class="rep-legend" id="rep-legend"></div>
+    </div>
+  </div>
+
+  <div class="center">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input class="search-inp" type="text" id="search" placeholder="Buscar por nome, hash..." data-i18n-placeholder="search.placeholder" oninput="filterRows()">
+      </div>
+      <div class="toolbar-sep"></div>
+      <button class="btn btn-sm" onclick="selectAll(true)"><i class="ti ti-checkbox"></i> <span data-i18n="action.all">Todos</span></button>
+      <button class="btn btn-sm" onclick="selectAll(false)"><i class="ti ti-square"></i> <span data-i18n="action.none">Nenhum</span></button>
+      <div class="toolbar-sep"></div>
+      <button class="btn btn-sm btn-info" onclick="document.getElementById('csv-input').click()"><i class="ti ti-upload"></i> <span data-i18n="action.importCsv">Importar CSV/TXT</span></button>
+      <input type="file" id="csv-input" accept=".csv,.txt" onchange="handleCSV(this)">
+      <button class="btn btn-sm" onclick="downloadValidationReport()"><i class="ti ti-file-alert"></i> <span data-i18n="action.report">Relatório</span></button>
+      <label class="toolbar-label">
+        <span data-i18n="option.defaultRep">Rep. padrão</span>
+        <select class="bulk-select" id="default-rep" onchange="setDefaultRep(this.value)"></select>
+      </label>
+      <label class="prefix-control" data-i18n-title="option.hexPrefixTitle" title="Incluir prefixo 0x no XML e na tabela">
+        <input type="checkbox" id="prefix-toggle" checked onchange="setHexPrefix(this.checked)">
+        <span data-i18n="option.hexPrefix">Incluir 0x</span>
+      </label>
+      <button class="btn btn-sm" id="right-panel-toggle" onclick="toggleRightPanel()" title="Ocultar painel direito">
+        <i id="right-panel-toggle-icon" class="ti ti-layout-sidebar-right-collapse"></i>
+        <span id="right-panel-toggle-label">Ocultar painel</span>
+      </button>
+    </div>
+
+    <div class="bulk-bar" id="bulk-bar">
+      <i class="ti ti-adjustments" style="font-size:16px" aria-hidden="true"></i>
+      <span id="bulk-count">0 selecionadas</span>
+      <span style="color:var(--color-text-info);margin:0 4px" data-i18n="bulk.setReputation">→ definir reputação:</span>
+      <select class="bulk-select" id="bulk-rep">
+        <option value="1">1 — Known Malicious</option>
+        <option value="15" selected>15 — Most Likely Malicious</option>
+        <option value="30">30 — Might Be Malicious</option>
+        <option value="50">50 — Unknown</option>
+        <option value="70">70 — Might Be Trusted</option>
+        <option value="85">85 — Most Likely Trusted</option>
+        <option value="99">99 — Known Trusted</option>
+      </select>
+      <button class="btn btn-sm btn-info" onclick="applyBulkRep()"><i class="ti ti-check"></i> <span data-i18n="action.apply">Aplicar</span></button>
+      <div style="flex:1"></div>
+      <button class="btn btn-sm" style="color:var(--color-text-danger)" onclick="deleteSelected()"><i class="ti ti-trash"></i> <span data-i18n="action.deleteSelected">Excluir selecionadas</span></button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="main-table">
+        <thead>
+          <tr>
+            <th class="td-check"><input type="checkbox" id="chk-all" onchange="selectAll(this.checked)" title="Selecionar todos" data-i18n-title="action.selectAll"></th>
+            <th class="td-num">#</th>
+            <th class="td-file" data-i18n="table.fileName">Nome do arquivo</th>
+            <th class="td-hash">SHA1Hash</th>
+            <th class="td-hash">MD5Hash</th>
+            <th class="td-hash">SHA256Hash</th>
+            <th class="td-rep" data-i18n="table.reputation">Reputação</th>
+            <th class="td-comment" data-i18n="table.comment">Comentário</th>
+            <th class="td-actions"></th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+      <div class="empty-tbl" id="empty-tbl">
+        <i class="ti ti-table-import" aria-hidden="true"></i>
+        <p data-i18n-html="empty.table">Nenhuma entrada ainda.<br>Clique em <strong>Nova linha</strong> ou <strong>Importar CSV</strong> para começar.</p>
+      </div>
+    </div>
+
+    <div class="statusbar">
+      <span><strong id="st-showing">0</strong> <span data-i18n="status.showing">exibidas</span></span>
+      <span><strong id="st-sel">0</strong> <span data-i18n="status.selected">selecionadas</span></span>
+      <span style="margin-left:auto;color:var(--color-text-secondary);font-family:var(--font-mono)">TIEReputationsImport.xml</span>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="panel-tabs">
+      <div class="tab active" onclick="switchTab('xml',this)" data-i18n="tab.xml">XML Preview</div>
+      <div class="tab" onclick="switchTab('csv',this)" data-i18n="tab.csv">CSV Guide</div>
+    </div>
+    <div class="panel-body">
+      <div class="tab-pane active" id="tab-xml">
+        <div class="xml-pre" id="xml-pre"></div>
+      </div>
+      <div class="tab-pane" id="tab-csv">
+        <div class="csv-drop" id="csv-drop" onclick="document.getElementById('csv-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="document.getElementById('csv-drop').classList.remove('drag')" ondrop="dropCSV(event)">
+          <i class="ti ti-file-upload" aria-hidden="true"></i>
+          <p data-i18n-html="csv.drop">Arraste um CSV ou TXT aqui<br>ou clique para selecionar</p>
+        </div>
+        <div class="csv-info">
+          <strong style="font-size:12px" data-i18n="csv.columns">Colunas reconhecidas:</strong>
+          <div class="csv-cols">
+            <span class="col-chip matched">FileName</span>
+            <span class="col-chip matched">SHA1Hash</span>
+            <span class="col-chip matched">MD5Hash</span>
+            <span class="col-chip matched">SHA256Hash</span>
+            <span class="col-chip matched">ReputationLevel</span>
+            <span class="col-chip matched">Comment</span>
+          </div>
+          <p style="margin-top:10px;font-size:11px;line-height:1.6;color:var(--color-text-secondary)" data-i18n-html="csv.help">
+            Os nomes das colunas não são case-sensitive. Colunas desconhecidas são ignoradas. Hashes são normalizados automaticamente (prefixo <code>0x</code>, maiúsculas).
+          </p>
+          <p style="margin-top:8px;font-size:11px;line-height:1.6;color:var(--color-text-secondary)" data-i18n-html="txt.help">
+            Arquivos TXT podem conter hashes MD5, SHA1 ou SHA256 em qualquer linha. A ferramenta identifica o tipo automaticamente.
+          </p>
+          <p style="margin-top:8px;font-size:11px;line-height:1.6;color:var(--color-text-secondary)">
+            <span data-i18n="csv.example">Exemplo de CSV:</span><br>
+            <code>FileName,MD5Hash,ReputationLevel</code><br>
+            <code>mal.exe,5a10d088f353...,1</code>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="notif" id="notif"><i class="ti ti-check"></i> <span id="notif-msg" data-i18n="notif.done">Feito!</span></div>
+
+<script>
+const REPS = [
+  {v:'1', l:'Known Malicious', en:'Known Malicious', pt:'Malicioso conhecido', short:'KM', bg:'rgba(255,77,94,.18)', fg:'#ff4d5e', bd:'rgba(255,77,94,.55)', glow:'rgba(255,77,94,.13)'},
+  {v:'15',l:'Most Likely Malicious', en:'Most Likely Malicious', pt:'Muito provável malicioso', short:'MLM', bg:'rgba(255,122,69,.18)', fg:'#ff7a45', bd:'rgba(255,122,69,.52)', glow:'rgba(255,122,69,.12)'},
+  {v:'30',l:'Might Be Malicious', en:'Might Be Malicious', pt:'Possivelmente malicioso', short:'MBM', bg:'rgba(245,158,11,.16)', fg:'#f59e0b', bd:'rgba(245,158,11,.48)', glow:'rgba(245,158,11,.1)'},
+  {v:'50',l:'Unknown', en:'Unknown', pt:'Desconhecido', short:'UNK', bg:'rgba(148,163,184,.14)', fg:'#a8b3c2', bd:'rgba(148,163,184,.35)', glow:'rgba(148,163,184,.08)'},
+  {v:'70',l:'Might Be Trusted', en:'Might Be Trusted', pt:'Possivelmente confiável', short:'MBT', bg:'rgba(132,204,22,.15)', fg:'#a3e635', bd:'rgba(132,204,22,.42)', glow:'rgba(132,204,22,.1)'},
+  {v:'85',l:'Most Likely Trusted', en:'Most Likely Trusted', pt:'Muito provável confiável', short:'MLT', bg:'rgba(52,211,153,.16)', fg:'#34d399', bd:'rgba(52,211,153,.48)', glow:'rgba(52,211,153,.12)'},
+  {v:'99',l:'Known Trusted', en:'Known Trusted', pt:'Confiável conhecido', short:'KT', bg:'rgba(34,197,94,.17)', fg:'#22c55e', bd:'rgba(34,197,94,.52)', glow:'rgba(34,197,94,.13)'},
+];
+const repMap = Object.fromEntries(REPS.map(r=>[r.v,r]));
+
+const I18N = {
+  pt: {
+    'action.addRow':'Nova linha',
+    'action.clear':'Limpar',
+    'action.copyXml':'Copiar XML',
+    'action.downloadXml':'Baixar XML',
+    'action.all':'Todos',
+    'action.none':'Nenhum',
+    'action.importCsv':'Importar CSV/TXT',
+    'action.report':'Relatório',
+    'action.apply':'Aplicar',
+    'action.deleteSelected':'Excluir selecionadas',
+    'action.remove':'Remover',
+    'action.undo':'Desfazer',
+    'action.saveProject':'Salvar projeto',
+    'action.loadProject':'Carregar projeto',
+    'action.selectAll':'Selecionar todos',
+    'action.hidePanel':'Ocultar painel',
+    'action.showPanel':'Mostrar painel',
+    'action.hidePanelTitle':'Ocultar painel direito',
+    'action.showPanelTitle':'Mostrar painel direito',
+    'option.hexPrefix':'Incluir 0x',
+    'option.hexPrefixTitle':'Incluir prefixo 0x no XML e na tabela',
+    'option.defaultRep':'Rep. padrão',
+    'section.summary':'Resumo',
+    'section.byReputation':'Por reputação',
+    'stats.valid':'Válidas',
+    'stats.invalid':'Inválidas',
+    'stats.selected':'Selecionadas',
+    'stats.duplicates':'Duplicadas',
+    'search.placeholder':'Buscar por nome, hash...',
+    'bulk.setReputation':'→ definir reputação:',
+    'bulk.count':({count})=>`${count} selecionada${count!==1?'s':''}`,
+    'table.fileName':'Nome do arquivo',
+    'table.reputation':'Reputação',
+    'table.comment':'Comentário',
+    'empty.table':'Nenhuma entrada ainda.<br>Clique em <strong>Nova linha</strong> ou <strong>Importar CSV</strong> para começar.',
+    'status.showing':'exibidas',
+    'status.selected':'selecionadas',
+    'tab.xml':'Prévia XML',
+    'tab.csv':'Guia CSV',
+    'csv.drop':'Arraste um CSV ou TXT aqui<br>ou clique para selecionar',
+    'csv.columns':'Colunas reconhecidas:',
+    'csv.help':'Os nomes das colunas não são case-sensitive. Colunas desconhecidas são ignoradas. Hashes são normalizados automaticamente (prefixo <code>0x</code>, maiúsculas).',
+    'txt.help':'Arquivos TXT podem conter hashes MD5, SHA1 ou SHA256 em qualquer linha. A ferramenta identifica o tipo automaticamente.',
+    'csv.example':'Exemplo de CSV:',
+    'notif.done':'Feito!',
+    'notif.noData':'Nenhum dado',
+    'notif.xmlCopied':'XML copiado para a área de transferência!',
+    'notif.downloadStarted':'Download iniciado!',
+    'notif.csvTooShort':'CSV precisa ter ao menos 2 linhas',
+    'notif.repApplied':({count})=>`Reputação aplicada a ${count} entrada${count!==1?'s':''}`,
+    'notif.removed':({count})=>`${count} entrada${count!==1?'s':''} removida${count!==1?'s':''}`,
+    'notif.csvImported':({count})=>`${count} entrada${count!==1?'s':''} importada${count!==1?'s':''} do CSV!`,
+    'notif.txtImported':({count})=>`${count} hash${count!==1?'es':''} importado${count!==1?'s':''} do TXT!`,
+    'notif.txtNoHashes':'Nenhum hash MD5, SHA1 ou SHA256 encontrado no TXT',
+    'notif.importProcessing':'Processando importação...',
+    'notif.projectSaved':'Projeto salvo em JSON!',
+    'notif.projectLoaded':({count})=>`Projeto carregado com ${count} entrada${count!==1?'s':''}!`,
+    'notif.projectInvalid':'Arquivo de projeto inválido',
+    'notif.undoEmpty':'Nada para desfazer',
+    'notif.undone':'Ação desfeita',
+    'notif.reportDownloaded':'Relatório de validação baixado!',
+    'notif.xmlWithWarnings':({count})=>`XML gerado com ${count} aviso${count!==1?'s':''}. Veja o relatório.`,
+    'xml.empty':'Adicione entradas para gerar o XML...',
+    'xml.previewLimited':({shown,total})=>`Prévia limitada a ${shown} de ${total} entradas para manter a interface rápida.`,
+    'placeholder.fileName':'nome.exe',
+    'placeholder.comment':'opcional'
+  },
+  en: {
+    'action.addRow':'New row',
+    'action.clear':'Clear',
+    'action.copyXml':'Copy XML',
+    'action.downloadXml':'Download XML',
+    'action.all':'All',
+    'action.none':'None',
+    'action.importCsv':'Import CSV/TXT',
+    'action.report':'Report',
+    'action.apply':'Apply',
+    'action.deleteSelected':'Delete selected',
+    'action.remove':'Remove',
+    'action.undo':'Undo',
+    'action.saveProject':'Save project',
+    'action.loadProject':'Load project',
+    'action.selectAll':'Select all',
+    'action.hidePanel':'Hide panel',
+    'action.showPanel':'Show panel',
+    'action.hidePanelTitle':'Hide right panel',
+    'action.showPanelTitle':'Show right panel',
+    'option.hexPrefix':'Include 0x',
+    'option.hexPrefixTitle':'Include the 0x prefix in the XML and table',
+    'option.defaultRep':'Default rep',
+    'section.summary':'Summary',
+    'section.byReputation':'By reputation',
+    'stats.valid':'Valid',
+    'stats.invalid':'Invalid',
+    'stats.selected':'Selected',
+    'stats.duplicates':'Duplicates',
+    'search.placeholder':'Search by name, hash...',
+    'bulk.setReputation':'→ set reputation:',
+    'bulk.count':({count})=>`${count} selected`,
+    'table.fileName':'File name',
+    'table.reputation':'Reputation',
+    'table.comment':'Comment',
+    'empty.table':'No entries yet.<br>Click <strong>New row</strong> or <strong>Import CSV</strong> to start.',
+    'status.showing':'shown',
+    'status.selected':'selected',
+    'tab.xml':'XML Preview',
+    'tab.csv':'CSV Guide',
+    'csv.drop':'Drop a CSV or TXT here<br>or click to select',
+    'csv.columns':'Recognized columns:',
+    'csv.help':'Column names are not case-sensitive. Unknown columns are ignored. Hashes are normalized automatically (<code>0x</code> prefix, uppercase).',
+    'txt.help':'TXT files can contain MD5, SHA1, or SHA256 hashes on any line. The tool detects the type automatically.',
+    'csv.example':'CSV example:',
+    'notif.done':'Done!',
+    'notif.noData':'No data',
+    'notif.xmlCopied':'XML copied to clipboard!',
+    'notif.downloadStarted':'Download started!',
+    'notif.csvTooShort':'CSV must have at least 2 lines',
+    'notif.repApplied':({count})=>`Reputation applied to ${count} entr${count===1?'y':'ies'}`,
+    'notif.removed':({count})=>`${count} entr${count===1?'y':'ies'} removed`,
+    'notif.csvImported':({count})=>`${count} entr${count===1?'y':'ies'} imported from CSV!`,
+    'notif.txtImported':({count})=>`${count} hash${count===1?'':'es'} imported from TXT!`,
+    'notif.txtNoHashes':'No MD5, SHA1, or SHA256 hash found in the TXT file',
+    'notif.importProcessing':'Processing import...',
+    'notif.projectSaved':'Project saved as JSON!',
+    'notif.projectLoaded':({count})=>`Project loaded with ${count} entr${count===1?'y':'ies'}!`,
+    'notif.projectInvalid':'Invalid project file',
+    'notif.undoEmpty':'Nothing to undo',
+    'notif.undone':'Action undone',
+    'notif.reportDownloaded':'Validation report downloaded!',
+    'notif.xmlWithWarnings':({count})=>`XML generated with ${count} warning${count!==1?'s':''}. Check the report.`,
+    'xml.empty':'Add entries to generate the XML...',
+    'xml.previewLimited':({shown,total})=>`Preview limited to ${shown} of ${total} entries to keep the interface fast.`,
+    'placeholder.fileName':'file.exe',
+    'placeholder.comment':'optional'
+  }
+};
+
+let currentLang='pt';
+try {
+  const savedLang=localStorage.getItem('tie-builder-lang');
+  if(I18N[savedLang]) currentLang=savedLang;
+} catch(e) {}
+
+let includeHexPrefix=true;
+try {
+  const savedPrefix=localStorage.getItem('tie-builder-hex-prefix');
+  if(savedPrefix!==null) includeHexPrefix=savedPrefix==='true';
+} catch(e) {}
+
+let rightPanelVisible=true;
+try {
+  const savedPanel=localStorage.getItem('tie-builder-right-panel');
+  if(savedPanel!==null) rightPanelVisible=savedPanel==='true';
+} catch(e) {}
+
+let defaultRep='15';
+try {
+  const savedDefaultRep=localStorage.getItem('tie-builder-default-rep');
+  if(REPS.some(r=>r.v===savedDefaultRep)) defaultRep=savedDefaultRep;
+} catch(e) {}
+
+let rows=[], idSeq=0, filter='', visibleIds=new Set(), filteredRows=[];
+let analysisCache={typeCounts:{md5:0,sha1:0,sha256:0}, duplicateCells:new Set(), duplicateCount:0, invalidCount:0, missingCount:0, issues:[]};
+let undoStack=[], activeEditKey='', tableRenderFrame=0;
+const MAX_UNDO=30;
+const VIRTUAL_ROW_HEIGHT=42;
+const VIRTUAL_BUFFER=12;
+const XML_PREVIEW_LIMIT=250;
+
+function t(key,vars={}){
+  const value=(I18N[currentLang]&&I18N[currentLang][key])||I18N.pt[key]||key;
+  return typeof value==='function'?value(vars):value;
+}
+
+function repLabel(rep){
+  return (rep&&(rep[currentLang]||rep.en||rep.l))||'';
+}
+
+function updateBulkRepOptions(){
+  updateRepOptions('bulk-rep',document.getElementById('bulk-rep')?.value||defaultRep);
+  updateRepOptions('default-rep',defaultRep);
+}
+
+function updateRepOptions(id,current){
+  const select=document.getElementById(id);
+  if(!select) return;
+  select.innerHTML=REPS.map(x=>`<option value="${x.v}"${current===x.v?' selected':''}>${x.v} &mdash; ${esc(repLabel(x))}</option>`).join('');
+  select.value=current;
+}
+
+function updateRightPanelToggle(){
+  const wrap=document.querySelector('.wrap');
+  if(wrap) wrap.classList.toggle('right-collapsed',!rightPanelVisible);
+
+  const btn=document.getElementById('right-panel-toggle');
+  const label=document.getElementById('right-panel-toggle-label');
+  const icon=document.getElementById('right-panel-toggle-icon');
+  if(btn) btn.title=t(rightPanelVisible?'action.hidePanelTitle':'action.showPanelTitle');
+  if(label) label.textContent=t(rightPanelVisible?'action.hidePanel':'action.showPanel');
+  if(icon) icon.className=rightPanelVisible?'ti ti-layout-sidebar-right-collapse':'ti ti-layout-sidebar-right-expand';
+}
+
+function translateStatic(){
+  document.documentElement.lang=currentLang==='pt'?'pt-BR':'en';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent=t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML=t(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{ el.placeholder=t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{ el.title=t(el.dataset.i18nTitle); });
+  const langSelect=document.getElementById('lang-select');
+  if(langSelect) langSelect.value=currentLang;
+  const prefixToggle=document.getElementById('prefix-toggle');
+  if(prefixToggle) prefixToggle.checked=includeHexPrefix;
+  const defaultSelect=document.getElementById('default-rep');
+  if(defaultSelect) defaultSelect.value=defaultRep;
+  updateBulkRepOptions();
+  updateRightPanelToggle();
+  updateUndoButton();
+}
+
+function setLanguage(lang){
+  currentLang=I18N[lang]?lang:'pt';
+  try { localStorage.setItem('tie-builder-lang',currentLang); } catch(e) {}
+  translateStatic();
+  render();
+}
+
+function uid(){ return ++idSeq; }
+
+function buildRow(data={}){
+  return {id:data.id||uid(), fileName:data.fileName||'', sha1:data.sha1||'', md5:data.md5||'', sha256:data.sha256||'', rep:data.rep||defaultRep, comment:data.comment||'', sel:!!data.sel};
+}
+
+function snapshotRows(){
+  return rows.map(r=>({...r}));
+}
+
+function pushUndo(){
+  undoStack.push({rows:snapshotRows(), idSeq, includeHexPrefix, defaultRep});
+  if(undoStack.length>MAX_UNDO) undoStack.shift();
+  updateUndoButton();
+}
+
+function updateUndoButton(){
+  const btn=document.getElementById('undo-btn');
+  if(btn) btn.disabled=undoStack.length===0;
+}
+
+function undoLast(){
+  const snap=undoStack.pop();
+  if(!snap){ showNotif(t('notif.undoEmpty')); return; }
+  rows=snap.rows.map(r=>({...r}));
+  idSeq=snap.idSeq;
+  includeHexPrefix=snap.includeHexPrefix;
+  defaultRep=snap.defaultRep;
+  activeEditKey='';
+  translateStatic();
+  render();
+  showNotif(t('notif.undone'));
+}
+
+function captureEdit(id,field){
+  const key=`${id}:${field}`;
+  if(activeEditKey!==key){
+    pushUndo();
+    activeEditKey=key;
+  }
+}
+
+function endEdit(){
+  activeEditKey='';
+}
+
+function addRow(data={}){
+  pushUndo();
+  rows.push(buildRow(data));
+  render();
+}
+
+function addRows(items){
+  items.forEach(item=>rows.push(buildRow(item)));
+  render();
+}
+
+function getRow(id){ return rows.find(r=>r.id===id); }
+
+function removeRow(id){ pushUndo(); rows=rows.filter(r=>r.id!==id); render(); }
+
+function clearAll(){ if(rows.length===0) return; pushUndo(); rows=[]; render(); }
+
+function formatHash(raw){
+  let v=raw.trim().toUpperCase();
+  if(v.startsWith('0X')) v=v.slice(2);
+  v=v.replace(/[^0-9A-F]/g,'');
+  return v?(includeHexPrefix?'0x':'')+v:'';
+}
+
+function refreshHashPrefixes(){
+  rows.forEach(r=>{
+    ['sha1','md5','sha256'].forEach(field=>{
+      if(r[field]) r[field]=formatHash(r[field]);
+    });
+  });
+}
+
+function setHexPrefix(enabled){
+  pushUndo();
+  includeHexPrefix=!!enabled;
+  try { localStorage.setItem('tie-builder-hex-prefix',String(includeHexPrefix)); } catch(e) {}
+  refreshHashPrefixes();
+  render();
+}
+
+function setDefaultRep(rep){
+  if(!REPS.some(r=>r.v===rep)) return;
+  defaultRep=rep;
+  try { localStorage.setItem('tie-builder-default-rep',defaultRep); } catch(e) {}
+  updateBulkRepOptions();
+}
+
+function toggleRightPanel(){
+  rightPanelVisible=!rightPanelVisible;
+  try { localStorage.setItem('tie-builder-right-panel',String(rightPanelVisible)); } catch(e) {}
+  updateRightPanelToggle();
+}
+
+function hashValid(v,type){
+  if(!v) return true;
+  const h=v.startsWith('0x')?v.slice(2):v;
+  const lens={sha1:40,md5:32,sha256:64};
+  return /^[0-9A-F]+$/i.test(h)&&h.length===lens[type];
+}
+
+function rowValid(r){
+  return (r.sha1||r.md5||r.sha256)&&hashValid(r.sha1,'sha1')&&hashValid(r.md5,'md5')&&hashValid(r.sha256,'sha256');
+}
+
+function filterRows(){
+  filter=document.getElementById('search').value.toLowerCase();
+  render();
+}
+
+function matchesFilter(r){
+  if(!filter) return true;
+  return [r.fileName,r.sha1,r.md5,r.sha256,r.comment].some(v=>v&&v.toLowerCase().includes(filter));
+}
+
+function selectAll(val){
+  const sel=typeof val==='boolean'?val:val;
+  visibleIds.forEach(id=>{
+    const r=getRow(id);
+    if(r) r.sel=sel;
+  });
+  render();
+}
+
+function applyBulkRep(){
+  const rep=document.getElementById('bulk-rep').value;
+  if(rows.some(r=>r.sel)) pushUndo();
+  rows.forEach(r=>{ if(r.sel) r.rep=rep; });
+  showNotif(t('notif.repApplied',{count:rows.filter(r=>r.sel).length}));
+  render();
+}
+
+function deleteSelected(){
+  const n=rows.filter(r=>r.sel).length;
+  if(n) pushUndo();
+  rows=rows.filter(r=>!r.sel);
+  showNotif(t('notif.removed',{count:n}));
+  render();
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escX(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderRepBadge(v){
+  const r=repMap[v]||{l:v,en:v,pt:v,bg:'#eee',fg:'#333'};
+  return `<span class="rep-badge" style="background:${r.bg};color:${r.fg}">${esc(repLabel(r))}</span>`;
+}
+
+function canonicalHash(v){
+  return String(v||'').replace(/^0x/i,'').toUpperCase();
+}
+
+function cellKey(id,field){
+  return `${id}:${field}`;
+}
+
+function analyzeRows(){
+  const typeCounts={md5:0,sha1:0,sha256:0};
+  const duplicateCells=new Set();
+  const hashMap=new Map();
+  const issues=[];
+  let invalidCount=0, missingCount=0, duplicateCount=0;
+
+  rows.forEach((r,index)=>{
+    const rowNum=index+1;
+    let hasHash=false;
+    ['sha1','md5','sha256'].forEach(field=>{
+      const value=r[field];
+      if(!value) return;
+      hasHash=true;
+      typeCounts[field]++;
+      if(!hashValid(value,field)){
+        invalidCount++;
+        issues.push({type:'invalid', row:rowNum, field, value});
+        return;
+      }
+      const key=`${field}:${canonicalHash(value)}`;
+      if(!hashMap.has(key)) hashMap.set(key,[]);
+      hashMap.get(key).push({row:rowNum, id:r.id, field, value});
+    });
+    if(!hasHash){
+      missingCount++;
+      issues.push({type:'missing', row:rowNum, field:'hash', value:''});
+    }
+  });
+
+  hashMap.forEach((entries,key)=>{
+    if(entries.length<2) return;
+    duplicateCount+=entries.length;
+    entries.forEach(entry=>duplicateCells.add(cellKey(entry.id,entry.field)));
+    issues.push({type:'duplicate', key, rows:entries.map(e=>e.row), field:entries[0].field, value:entries[0].value});
+  });
+
+  return {typeCounts, duplicateCells, duplicateCount, invalidCount, missingCount, issues};
+}
+
+function cellClass(hasError,isDuplicate){
+  if(hasError) return 'err-cell';
+  if(isDuplicate) return 'dup-cell';
+  return '';
+}
+
+function render(){
+  const tbody=document.getElementById('tbl-body');
+  analysisCache=analyzeRows();
+  filteredRows=rows.filter(matchesFilter);
+  visibleIds=new Set(filteredRows.map(r=>r.id));
+
+  document.getElementById('empty-tbl').style.display=rows.length===0?'flex':'none';
+  document.querySelector('table').style.display=rows.length===0?'none':'table';
+
+  renderTableRows();
+
+  updateStats();
+  updateBulkBar();
+  updateXML();
+  updateSidebar();
+}
+
+function renderTableRows(){
+  const tbody=document.getElementById('tbl-body');
+  const tableWrap=document.querySelector('.table-wrap');
+  if(!tbody) return;
+  const total=filteredRows.length;
+  const useVirtual=total>80&&tableWrap;
+  let start=0, end=total, topPad=0, bottomPad=0;
+
+  if(useVirtual){
+    const viewport=tableWrap.clientHeight||520;
+    start=Math.max(0,Math.floor(tableWrap.scrollTop/VIRTUAL_ROW_HEIGHT)-VIRTUAL_BUFFER);
+    end=Math.min(total,Math.ceil((tableWrap.scrollTop+viewport)/VIRTUAL_ROW_HEIGHT)+VIRTUAL_BUFFER);
+    topPad=start*VIRTUAL_ROW_HEIGHT;
+    bottomPad=(total-end)*VIRTUAL_ROW_HEIGHT;
+  }
+
+  const topSpacer=topPad?`<tr class="virtual-spacer"><td colspan="9" style="height:${topPad}px"></td></tr>`:'';
+  const bottomSpacer=bottomPad?`<tr class="virtual-spacer"><td colspan="9" style="height:${bottomPad}px"></td></tr>`:'';
+  tbody.innerHTML=topSpacer+filteredRows.slice(start,end).map((r,i)=>renderRow(r,start+i)).join('')+bottomSpacer;
+
+  const allVis=rows.filter(r=>visibleIds.has(r.id));
+  const chk=document.getElementById('chk-all');
+  if(chk) chk.checked=allVis.length>0&&allVis.every(r=>r.sel);
+}
+
+function renderRow(r,i){
+    const valid=rowValid(r);
+    const sha1err=r.sha1&&!hashValid(r.sha1,'sha1');
+    const md5err=r.md5&&!hashValid(r.md5,'md5');
+    const sha256err=r.sha256&&!hashValid(r.sha256,'sha256');
+    const sha1dup=analysisCache.duplicateCells.has(cellKey(r.id,'sha1'));
+    const md5dup=analysisCache.duplicateCells.has(cellKey(r.id,'md5'));
+    const sha256dup=analysisCache.duplicateCells.has(cellKey(r.id,'sha256'));
+    const rep=repMap[r.rep]||{l:r.rep,en:r.rep,pt:r.rep,bg:'rgba(148,163,184,.14)',fg:'#a8b3c2',bd:'rgba(148,163,184,.35)',glow:'rgba(148,163,184,.08)'};
+    const opts=REPS.map(x=>`<option value="${x.v}"${r.rep===x.v?' selected':''}>${x.v} &mdash; ${esc(repLabel(x))}</option>`).join('');
+    const repStyle=`--rep-fg:${rep.fg};--rep-bg:${rep.bg};--rep-bd:${rep.bd||rep.fg};--rep-glow:${rep.glow||'transparent'};color:${rep.fg};background:${rep.bg};border-color:${rep.bd||rep.fg}`;
+    return `<tr id="tr-${r.id}" class="${r.sel?'selected':''}">
+      <td class="td-check"><div class="td-inner" style="justify-content:center"><input type="checkbox" ${r.sel?'checked':''} onchange="toggleSel(${r.id},this.checked)"></div></td>
+      <td class="td-num"><div class="td-inner" style="justify-content:center;color:var(--color-text-secondary)">${i+1}</div></td>
+      <td class="td-file"><div class="td-inner"><input class="cell-inp" value="${esc(r.fileName)}" placeholder="${esc(t('placeholder.fileName'))}" onfocus="captureEdit(${r.id},'fileName')" oninput="setField(${r.id},'fileName',this.value)" onblur="endEdit()"></div></td>
+      <td class="${cellClass(sha1err,sha1dup)}"><div class="td-inner"><input class="cell-hash" value="${esc(r.sha1)}" placeholder="SHA1 (40)" onfocus="captureEdit(${r.id},'sha1')" oninput="setField(${r.id},'sha1',this.value)" onblur="blurHash(${r.id},'sha1',this);endEdit()"></div></td>
+      <td class="${cellClass(md5err,md5dup)}"><div class="td-inner"><input class="cell-hash" value="${esc(r.md5)}" placeholder="MD5 (32)" onfocus="captureEdit(${r.id},'md5')" oninput="setField(${r.id},'md5',this.value)" onblur="blurHash(${r.id},'md5',this);endEdit()"></div></td>
+      <td class="${cellClass(sha256err,sha256dup)}"><div class="td-inner"><input class="cell-hash" value="${esc(r.sha256)}" placeholder="SHA256 (64)" onfocus="captureEdit(${r.id},'sha256')" oninput="setField(${r.id},'sha256',this.value)" onblur="blurHash(${r.id},'sha256',this);endEdit()"></div></td>
+      <td class="td-rep"><div class="td-inner"><select class="cell-sel rep-select" style="${repStyle}" onchange="setField(${r.id},'rep',this.value)">${opts}</select></div></td>
+      <td class="td-comment"><div class="td-inner"><input class="cell-inp" value="${esc(r.comment)}" placeholder="${esc(t('placeholder.comment'))}" onfocus="captureEdit(${r.id},'comment')" oninput="setField(${r.id},'comment',this.value)" onblur="endEdit()"></div></td>
+      <td class="td-actions"><div class="td-inner" style="justify-content:center"><button class="btn btn-icon btn-xs" style="color:var(--color-text-danger)" onclick="removeRow(${r.id})" title="${esc(t('action.remove'))}"><i class="ti ti-trash" style="font-size:14px"></i></button></div></td>
+    </tr>`;
+}
+
+function toggleSel(id,val){
+  const r=getRow(id);
+  if(r){ r.sel=val; updateStats(); updateBulkBar(); }
+  const tr=document.getElementById('tr-'+id);
+  if(tr) tr.className=val?'selected':'';
+  const allVis=rows.filter(r=>visibleIds.has(r.id));
+  document.getElementById('chk-all').checked=allVis.length>0&&allVis.every(r=>r.sel);
+}
+
+function setField(id,field,val){
+  const r=getRow(id);
+  if(r){
+    if(r[field]===val) return;
+    if(field==='rep') pushUndo();
+    r[field]=val;
+    if(field==='rep'){ render(); return; }
+    analysisCache=analyzeRows();
+    updateXML();
+    updateStats();
+    updateSidebar();
+  }
+}
+
+function blurHash(id,field,el){
+  const r=getRow(id);
+  if(!r) return;
+  const fmt=formatHash(r[field]);
+  r[field]=fmt; el.value=fmt;
+  analysisCache=analyzeRows();
+  renderTableRows();
+  updateXML();
+  updateStats();
+  updateSidebar();
+  const td=el.closest('td');
+  if(td) td.className=cellClass(fmt&&!hashValid(fmt,field),analysisCache.duplicateCells.has(cellKey(id,field)));
+}
+
+function updateStats(){
+  const total=rows.length, valid=rows.filter(rowValid).length, sel=rows.filter(r=>r.sel).length;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-valid').textContent=valid;
+  document.getElementById('s-invalid').textContent=total-valid;
+  document.getElementById('s-sel').textContent=sel;
+  document.getElementById('s-md5').textContent=analysisCache.typeCounts.md5;
+  document.getElementById('s-sha1').textContent=analysisCache.typeCounts.sha1;
+  document.getElementById('s-sha256').textContent=analysisCache.typeCounts.sha256;
+  document.getElementById('s-dup').textContent=analysisCache.duplicateCount;
+  document.getElementById('st-showing').textContent=visibleIds.size;
+  document.getElementById('st-sel').textContent=sel;
+  updateUndoButton();
+}
+
+function updateBulkBar(){
+  const sel=rows.filter(r=>r.sel).length;
+  const bar=document.getElementById('bulk-bar');
+  bar.classList.toggle('show',sel>0);
+  document.getElementById('bulk-count').textContent=t('bulk.count',{count:sel});
+}
+
+function updateSidebar(){
+  const counts={};
+  rows.forEach(r=>{ counts[r.rep]=(counts[r.rep]||0)+1; });
+  const leg=document.getElementById('rep-legend');
+  leg.innerHTML=REPS.map(r=>{
+    const c=counts[r.v]||0;
+    if(c===0) return '';
+    return `<div class="rep-row" onclick="filterByRep('${r.v}')"><div class="rep-dot" style="background:${r.fg}"></div><span style="font-size:11px;color:${r.fg}">${esc(repLabel(r))}</span><span class="rep-count">${c}</span></div>`;
+  }).join('');
+}
+
+function filterByRep(v){
+  document.getElementById('search').value='rep:'+v;
+  filter='rep:'+v;
+  render();
+}
+
+function matchesFilter(r){
+  if(!filter) return true;
+  if(filter.startsWith('rep:')){
+    return r.rep===filter.slice(4);
+  }
+  const q=filter.toLowerCase();
+  return [r.fileName,r.sha1,r.md5,r.sha256,r.comment].some(v=>v&&v.toLowerCase().includes(q));
+}
+
+function generateXML(limit=Infinity){
+  if(rows.length===0) return '';
+  const lines=['<?xml version="1.0" encoding="UTF-8"?>','<TIEReputations>'];
+  rows.slice(0,limit).forEach(r=>{
+    lines.push('\t<FileReputation>');
+    if(r.fileName) lines.push(`\t\t<FileName>${escX(r.fileName)}</FileName>`);
+    if(r.sha1)     lines.push(`\t\t<SHA1Hash>${escX(r.sha1)}</SHA1Hash>`);
+    if(r.md5)      lines.push(`\t\t<MD5Hash>${escX(r.md5)}</MD5Hash>`);
+    if(r.sha256)   lines.push(`\t\t<SHA256Hash>${escX(r.sha256)}</SHA256Hash>`);
+    lines.push(`\t\t<ReputationLevel>${r.rep}</ReputationLevel>`);
+    if(r.comment)  lines.push(`\t\t<Comment>${escX(r.comment)}</Comment>`);
+    lines.push('\t</FileReputation>');
+  });
+  if(rows.length>limit) lines.push(`\t<!-- ${escX(t('xml.previewLimited',{shown:limit,total:rows.length}))} -->`);
+  lines.push('</TIEReputations>');
+  return lines.join('\n');
+}
+
+function updateXML(){
+  const xml=generateXML(XML_PREVIEW_LIMIT);
+  const pre=document.getElementById('xml-pre');
+  if(!xml){ pre.innerHTML=`<span style="opacity:.4;font-style:italic">${esc(t('xml.empty'))}</span>`; return; }
+  pre.innerHTML=xml
+    .replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/(&lt;\/?[A-Za-z0-9?]+)/g,'<span class="xt">$1</span>')
+    .replace(/(&gt;)/g,'<span class="xt">$1</span>');
+}
+
+function copyXML(){
+  const xml=generateXML();
+  if(!xml){ showNotif(t('notif.noData')); return; }
+  navigator.clipboard.writeText(xml).catch(()=>{
+    const t=document.createElement('textarea');t.value=xml;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);
+  });
+  const report=analyzeRows();
+  showNotif(report.issues.length?t('notif.xmlWithWarnings',{count:report.issues.length}):t('notif.xmlCopied'),report.issues.length?4200:2500);
+}
+
+function downloadXML(){
+  const xml=generateXML();
+  if(!xml){ showNotif(t('notif.noData')); return; }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([xml],{type:'application/xml'}));
+  a.download='TIEReputationsImport.xml'; a.click();
+  const report=analyzeRows();
+  showNotif(report.issues.length?t('notif.xmlWithWarnings',{count:report.issues.length}):t('notif.downloadStarted'),report.issues.length?4200:2500);
+}
+
+function downloadTextFile(filename,content,type='text/plain'){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));
+  a.download=filename;
+  a.click();
+}
+
+function buildValidationReport(){
+  const report=analyzeRows();
+  const generated=new Date().toISOString();
+  const lines=[
+    'Trellix TIE Reputation Builder - Validation Report',
+    `Generated: ${generated}`,
+    '',
+    `Total rows: ${rows.length}`,
+    `Valid rows: ${rows.filter(rowValid).length}`,
+    `Invalid rows: ${rows.length-rows.filter(rowValid).length}`,
+    `MD5 hashes: ${report.typeCounts.md5}`,
+    `SHA1 hashes: ${report.typeCounts.sha1}`,
+    `SHA256 hashes: ${report.typeCounts.sha256}`,
+    `Duplicate hash cells: ${report.duplicateCount}`,
+    ''
+  ];
+
+  if(report.issues.length===0){
+    lines.push('No validation issues found.');
+    return lines.join('\n');
+  }
+
+  lines.push('Issues:');
+  report.issues.forEach((issue,index)=>{
+    if(issue.type==='invalid') lines.push(`${index+1}. INVALID ${issue.field.toUpperCase()} at row ${issue.row}: ${issue.value}`);
+    if(issue.type==='missing') lines.push(`${index+1}. MISSING HASH at row ${issue.row}`);
+    if(issue.type==='duplicate') lines.push(`${index+1}. DUPLICATE ${issue.field.toUpperCase()} ${issue.value} at rows ${issue.rows.join(', ')}`);
+  });
+
+  return lines.join('\n');
+}
+
+function downloadValidationReport(){
+  downloadTextFile('TIEReputationsValidationReport.txt',buildValidationReport());
+  showNotif(t('notif.reportDownloaded'));
+}
+
+function saveProject(){
+  const project={
+    schema:'trellix-tie-reputation-builder',
+    version:2,
+    savedAt:new Date().toISOString(),
+    settings:{includeHexPrefix,defaultRep,currentLang,rightPanelVisible},
+    rows:snapshotRows().map(r=>({...r,sel:false}))
+  };
+  downloadTextFile('TrellixTIEReputationProject.json',JSON.stringify(project,null,2),'application/json');
+  showNotif(t('notif.projectSaved'));
+}
+
+function handleProjectFile(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>loadProject(e.target.result);
+  reader.readAsText(file,'UTF-8');
+  input.value='';
+}
+
+function loadProject(text){
+  try{
+    const project=JSON.parse(text);
+    if(!project||!Array.isArray(project.rows)) throw new Error('Invalid project');
+    pushUndo();
+    const settings=project.settings||{};
+    includeHexPrefix=settings.includeHexPrefix!==undefined?!!settings.includeHexPrefix:includeHexPrefix;
+    defaultRep=REPS.some(r=>r.v===settings.defaultRep)?settings.defaultRep:defaultRep;
+    if(I18N[settings.currentLang]) currentLang=settings.currentLang;
+    if(settings.rightPanelVisible!==undefined) rightPanelVisible=!!settings.rightPanelVisible;
+    idSeq=0;
+    rows=project.rows.map(r=>buildRow({...r,id:undefined,sel:false}));
+    idSeq=rows.reduce((max,r)=>Math.max(max,r.id),0);
+    refreshHashPrefixes();
+    translateStatic();
+    render();
+    showNotif(t('notif.projectLoaded',{count:rows.length}));
+  }catch(e){
+    showNotif(t('notif.projectInvalid'),3500);
+  }
+}
+
+function showNotif(msg,ms=2500){
+  const n=document.getElementById('notif');
+  document.getElementById('notif-msg').textContent=msg;
+  n.classList.add('show');
+  clearTimeout(n._t);
+  n._t=setTimeout(()=>n.classList.remove('show'),ms);
+}
+
+const CSV_ALIASES = {
+  filename:['filename','file_name','name','arquivo'],
+  sha1:['sha1hash','sha1','sha-1'],
+  md5:['md5hash','md5','md5hash'],
+  sha256:['sha256hash','sha256','sha-256'],
+  rep:['reputationlevel','reputation','rep','level','nivel'],
+  comment:['comment','comentario','comentário','obs','note']
+};
+
+function getCSVIndexes(headers){
+  const idx={};
+  Object.entries(CSV_ALIASES).forEach(([field,aliases])=>{
+    const i=headers.findIndex(h=>aliases.includes(h));
+    if(i>=0) idx[field]=i;
+  });
+  return idx;
+}
+
+function looksLikeCSV(text){
+  const firstLine=(text.trimStart().split(/\r?\n/)[0]||'');
+  if(!firstLine.includes(',')) return false;
+  const headers=firstLine.split(',').map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase());
+  return Object.keys(getCSVIndexes(headers)).length>0;
+}
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length<2){ showNotif(t('notif.csvTooShort'),3000); return; }
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase());
+  const idx=getCSVIndexes(headers);
+  if(Object.keys(idx).length===0){ parseTXT(text); return; }
+
+  const imported=[];
+  lines.slice(1).forEach(line=>{
+    if(!line.trim()) return;
+    const cols=line.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+    const row={};
+    if(idx.filename!==undefined) row.fileName=cols[idx.filename]||'';
+    if(idx.sha1!==undefined) row.sha1=formatHash(cols[idx.sha1]||'');
+    if(idx.md5!==undefined) row.md5=formatHash(cols[idx.md5]||'');
+    if(idx.sha256!==undefined) row.sha256=formatHash(cols[idx.sha256]||'');
+    if(idx.rep!==undefined){ const v=cols[idx.rep]; row.rep=REPS.find(r=>r.v===v)?v:defaultRep; }
+    if(idx.comment!==undefined) row.comment=cols[idx.comment]||'';
+    if(row.sha1||row.md5||row.sha256||row.fileName) imported.push(row);
+  });
+  finishImport(imported,'csv');
+}
+
+function detectHashField(raw){
+  const h=String(raw||'').replace(/^0x/i,'');
+  if(!/^[0-9A-Fa-f]+$/.test(h)) return '';
+  if(h.length===32) return 'md5';
+  if(h.length===40) return 'sha1';
+  if(h.length===64) return 'sha256';
+  return '';
+}
+
+function extractHashesFromLine(line){
+  const re=/(?:^|[^0-9A-Fa-f])((?:0[xX])?[0-9A-Fa-f]{32}|(?:0[xX])?[0-9A-Fa-f]{40}|(?:0[xX])?[0-9A-Fa-f]{64})(?=$|[^0-9A-Fa-f])/g;
+  return [...String(line||'').matchAll(re)].map(match=>match[1]);
+}
+
+function parseTXT(text){
+  const imported=[];
+  text.split(/\r?\n/).forEach(line=>{
+    const row={}, extraRows=[];
+    extractHashesFromLine(line).forEach(raw=>{
+      const field=detectHashField(raw);
+      if(!field) return;
+      const hash=formatHash(raw);
+      if(!row[field]) row[field]=hash;
+      else extraRows.push({[field]:hash});
+    });
+    if(row.md5||row.sha1||row.sha256) imported.push(row);
+    extraRows.forEach(extra=>imported.push(extra));
+  });
+
+  if(imported.length===0){
+    showNotif(t('notif.txtNoHashes'),3000);
+    return;
+  }
+
+  finishImport(imported,'txt');
+}
+
+function finishImport(imported,source){
+  if(imported.length){
+    pushUndo();
+    addRows(imported);
+  }
+  showNotif(t(source==='csv'?'notif.csvImported':'notif.txtImported',{count:imported.length}));
+  switchTab('xml', document.querySelectorAll('.tab')[0]);
+}
+
+function canUseImportWorker(text){
+  return typeof Worker!=='undefined'&&typeof Blob!=='undefined'&&typeof URL!=='undefined'&&String(text||'').length>200000;
+}
+
+function runImportWorker(text,fileName=''){
+  const workerCode=`
+const CSV_ALIASES=${JSON.stringify(CSV_ALIASES)};
+const REP_VALUES=${JSON.stringify(REPS.map(r=>r.v))};
+function formatHash(raw,includeHexPrefix){
+  let v=String(raw||'').trim().toUpperCase();
+  if(v.startsWith('0X')) v=v.slice(2);
+  v=v.replace(/[^0-9A-F]/g,'');
+  return v?(includeHexPrefix?'0x':'')+v:'';
+}
+function getCSVIndexes(headers){
+  const idx={};
+  Object.entries(CSV_ALIASES).forEach(([field,aliases])=>{
+    const i=headers.findIndex(h=>aliases.includes(h));
+    if(i>=0) idx[field]=i;
+  });
+  return idx;
+}
+function looksLikeCSV(text){
+  const firstLine=(text.trimStart().split(/\\r?\\n/)[0]||'');
+  if(!firstLine.includes(',')) return false;
+  const headers=firstLine.split(',').map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase());
+  return Object.keys(getCSVIndexes(headers)).length>0;
+}
+function detectHashField(raw){
+  const h=String(raw||'').replace(/^0x/i,'');
+  if(!/^[0-9A-Fa-f]+$/.test(h)) return '';
+  if(h.length===32) return 'md5';
+  if(h.length===40) return 'sha1';
+  if(h.length===64) return 'sha256';
+  return '';
+}
+function extractHashesFromLine(line){
+  const re=/(?:^|[^0-9A-Fa-f])((?:0[xX])?[0-9A-Fa-f]{32}|(?:0[xX])?[0-9A-Fa-f]{40}|(?:0[xX])?[0-9A-Fa-f]{64})(?=$|[^0-9A-Fa-f])/g;
+  return [...String(line||'').matchAll(re)].map(match=>match[1]);
+}
+function parseCSVRows(text,includeHexPrefix,defaultRep){
+  const lines=text.trim().split(/\\r?\\n/);
+  if(lines.length<2) return {rows:[],errorKey:'notif.csvTooShort'};
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase());
+  const idx=getCSVIndexes(headers);
+  if(Object.keys(idx).length===0) return {rows:parseTXTRows(text,includeHexPrefix,defaultRep),source:'txt'};
+  const rows=[];
+  lines.slice(1).forEach(line=>{
+    if(!line.trim()) return;
+    const cols=line.split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+    const row={};
+    if(idx.filename!==undefined) row.fileName=cols[idx.filename]||'';
+    if(idx.sha1!==undefined) row.sha1=formatHash(cols[idx.sha1]||'',includeHexPrefix);
+    if(idx.md5!==undefined) row.md5=formatHash(cols[idx.md5]||'',includeHexPrefix);
+    if(idx.sha256!==undefined) row.sha256=formatHash(cols[idx.sha256]||'',includeHexPrefix);
+    if(idx.rep!==undefined){ const v=cols[idx.rep]; row.rep=REP_VALUES.includes(v)?v:defaultRep; }
+    if(idx.comment!==undefined) row.comment=cols[idx.comment]||'';
+    if(row.sha1||row.md5||row.sha256||row.fileName) rows.push(row);
+  });
+  return {rows,source:'csv'};
+}
+function parseTXTRows(text,includeHexPrefix,defaultRep){
+  const rows=[];
+  text.split(/\\r?\\n/).forEach(line=>{
+    const row={rep:defaultRep}, extraRows=[];
+    extractHashesFromLine(line).forEach(raw=>{
+      const field=detectHashField(raw);
+      if(!field) return;
+      const hash=formatHash(raw,includeHexPrefix);
+      if(!row[field]) row[field]=hash;
+      else extraRows.push({rep:defaultRep,[field]:hash});
+    });
+    if(row.md5||row.sha1||row.sha256) rows.push(row);
+    extraRows.forEach(extra=>rows.push(extra));
+  });
+  return rows;
+}
+self.onmessage=e=>{
+  const {text,fileName,includeHexPrefix,defaultRep}=e.data;
+  const source=/\\.txt$/i.test(fileName)||!looksLikeCSV(text)?'txt':'csv';
+  const result=source==='csv'?parseCSVRows(text,includeHexPrefix,defaultRep):{rows:parseTXTRows(text,includeHexPrefix,defaultRep),source:'txt'};
+  self.postMessage({source:result.source||source,rows:result.rows||[],errorKey:result.errorKey||''});
+};`;
+  return new Promise((resolve,reject)=>{
+    const blobUrl=URL.createObjectURL(new Blob([workerCode],{type:'application/javascript'}));
+    const worker=new Worker(blobUrl);
+    worker.onmessage=e=>{ worker.terminate(); URL.revokeObjectURL(blobUrl); resolve(e.data); };
+    worker.onerror=e=>{ worker.terminate(); URL.revokeObjectURL(blobUrl); reject(e); };
+    worker.postMessage({text,fileName,includeHexPrefix,defaultRep});
+  });
+}
+
+function parseImportFile(text,fileName=''){
+  if(canUseImportWorker(text)){
+    showNotif(t('notif.importProcessing'),4000);
+    runImportWorker(text,fileName).then(result=>{
+      if(result.errorKey){ showNotif(t(result.errorKey),3000); return; }
+      if(result.source==='txt'&&result.rows.length===0){ showNotif(t('notif.txtNoHashes'),3000); return; }
+      finishImport(result.rows,result.source);
+    }).catch(()=>{
+      const isTXT=/\.txt$/i.test(fileName);
+      if(isTXT||!looksLikeCSV(text)) parseTXT(text);
+      else parseCSV(text);
+    });
+    return;
+  }
+  const isTXT=/\.txt$/i.test(fileName);
+  if(isTXT||!looksLikeCSV(text)) parseTXT(text);
+  else parseCSV(text);
+}
+
+function handleCSV(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>parseImportFile(e.target.result,file.name);
+  reader.readAsText(file,'UTF-8');
+  input.value='';
+}
+
+function dropCSV(e){
+  e.preventDefault();
+  document.getElementById('csv-drop').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>parseImportFile(ev.target.result,file.name);
+  reader.readAsText(file,'UTF-8');
+}
+
+function scheduleTableRender(){
+  if(tableRenderFrame) return;
+  const raf=typeof requestAnimationFrame==='function'?requestAnimationFrame:(fn)=>setTimeout(fn,16);
+  tableRenderFrame=raf(()=>{
+    tableRenderFrame=0;
+    renderTableRows();
+  });
+}
+
+const tableWrapEl=document.querySelector('.table-wrap');
+if(tableWrapEl&&tableWrapEl.addEventListener) tableWrapEl.addEventListener('scroll',scheduleTableRender,{passive:true});
+
+translateStatic();
+render();
+</script>
+</body>
+</html>
